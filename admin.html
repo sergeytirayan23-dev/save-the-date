@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Elite Admin v6 (Stable)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background: #0f0f0f; color: #e0e0e0; font-family: 'Montserrat', sans-serif; padding: 20px; margin: 0; }
+        .container { max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1.2fr; gap: 20px; }
+        
+        h2 { color: #C2B280; border-bottom: 1px solid #333; padding-bottom: 10px; font-size: 14px; text-transform: uppercase; letter-spacing: 2px; display: flex; justify-content: space-between; align-items: center; }
+        
+        .card { background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        
+        /* Таблицы */
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th { text-align: left; color: #888; padding: 10px; border-bottom: 1px solid #444; }
+        td { padding: 10px; border-bottom: 1px solid #252525; vertical-align: middle; }
+        
+        /* Статусы */
+        .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #555; margin-right: 5px; }
+        .online { background: #2ecc71; box-shadow: 0 0 8px #2ecc71; }
+        
+        /* Управление деньгами */
+        .money-input { background: #222; border: 1px solid #444; color: #fff; padding: 6px; width: 80px; border-radius: 4px; text-align: center; font-weight: bold; outline: none; }
+        .money-input:focus { border-color: #C2B280; background: #333; }
+        
+        .action-btn { border: none; padding: 7px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 10px; margin-left: 3px; color: #fff; transition: 0.2s; }
+        .btn-add { background: #27ae60; }
+        .btn-rem { background: #c0392b; }
+        .btn-add:hover { background: #2ecc71; }
+        .btn-rem:hover { background: #e74c3c; }
+        
+        /* Логи */
+        .log-list { max-height: 600px; overflow-y: auto; }
+        .log-item { padding: 8px 0; border-bottom: 1px solid #252525; font-size: 11px; display: flex; justify-content: space-between; }
+        .log-type { font-weight: bold; width: 70px; display: inline-block; font-size: 10px; }
+        
+        .type-BUY { color: #e74c3c; } 
+        .type-REGISTER { color: #9b59b6; } 
+        .type-ROULETTE { color: #f1c40f; } 
+        .type-ADMIN { color: #3498db; } 
+        .type-SUPPORT { color: #2ecc71; } 
+        .type-ELITE { color: #e67e22; }
+
+        /* Репорты */
+        .report-item { background: #252525; padding: 15px; border-radius: 6px; margin-bottom: 10px; border-left: 3px solid #C2B280; }
+        .rep-header { display: flex; justify-content: space-between; font-size: 10px; color: #888; margin-bottom: 5px; }
+        .rep-msg { font-size: 13px; color: #fff; margin-bottom: 10px; font-weight: 500; }
+        .rep-input { width: 100%; background: #333; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 4px; box-sizing: border-box; margin-bottom: 5px; outline: none; }
+        .rep-input:focus { border-color: #C2B280; background: #333; }
+        
+        .quick-btn { background: #333; border: 1px solid #555; color: #ccc; font-size: 9px; padding: 4px 8px; cursor: pointer; border-radius: 3px; margin-right: 5px; }
+        .quick-btn:hover { background: #444; color: #fff; border-color: #C2B280; }
+
+        .btn-clear { background: transparent; border: 1px solid #c0392b; color: #c0392b; font-size: 9px; padding: 4px 8px; cursor: pointer; border-radius: 4px; }
+        .btn-clear:hover { background: #c0392b; color: #fff; }
+        
+        /* Индикатор обновления */
+        #status-indicator { font-size: 10px; color: #555; margin-top: 5px; }
+        .paused { color: #e67e22 !important; }
+    </style>
+</head>
+<body>
+
+<div style="text-align:center; margin-bottom:30px; padding-top: 20px;">
+    <h1 style="color:#C2B280; letter-spacing:5px; margin:0;">ELITE <span style="color:#fff">AGENCY</span></h1>
+    <div id="status-indicator">AUTO-UPDATE: ACTIVE</div>
+</div>
+
+<div class="container">
+    
+    <div>
+        <div class="card">
+            <h2>
+                👥 Пользователи и Баланс
+                <button onclick="forceRefresh()" style="background:transparent; border:none; color:#C2B280; cursor:pointer"><i class="fas fa-sync"></i></button>
+            </h2>
+            <table id="usersTable">
+                <thead>
+                    <tr>
+                        <th>Статус</th>
+                        <th>Email</th>
+                        <th>Баланс</th>
+                        <th>Управление</th>
+                    </tr>
+                </thead>
+                <tbody id="usersList"></tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>📩 Техподдержка (Новые вопросы)</h2>
+            <div id="reportsList"></div>
+        </div>
+    </div>
+
+    <div>
+        <div class="card">
+            <h2>
+                📜 Полная История
+                <button class="btn-clear" onclick="clearLogs()">ОЧИСТИТЬ (ПАРОЛЬ)</button>
+            </h2>
+            <div id="logList" class="log-list"></div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const SERVER = 'http://localhost:3000';
+    let isEditing = false; // Флаг: пишет ли админ текст прямо сейчас
+
+    // Глобальный слушатель: если мы кликнули в поле ввода, останавливаем обновление
+    document.addEventListener('focusin', (e) => {
+        if (e.target.tagName === 'INPUT') {
+            isEditing = true;
+            updateStatus(false);
+        }
+    });
+
+    // Если кликнули мимо (убрали фокус), разрешаем обновление
+    document.addEventListener('focusout', (e) => {
+        if (e.target.tagName === 'INPUT') {
+            isEditing = false;
+            updateStatus(true);
+        }
+    });
+
+    function updateStatus(active) {
+        const el = document.getElementById('status-indicator');
+        if(active) {
+            el.innerText = "AUTO-UPDATE: ACTIVE";
+            el.className = "";
+        } else {
+            el.innerText = "PAUSED (EDITING MODE)";
+            el.className = "paused";
+        }
+    }
+
+    async function loadData() {
+        // !!! ГЛАВНАЯ ФИШКА !!!
+        // Если админ пишет (isEditing = true), мы НЕ обновляем таблицу, чтобы текст не пропадал
+        if (isEditing) return;
+
+        try {
+            const res = await fetch(`${SERVER}/admin/data`);
+            const data = await res.json();
+            renderUsers(data.users);
+            renderLogs(data.logs);
+            renderReports(data.reports);
+        } catch (e) { console.error(e); }
+    }
+
+    function forceRefresh() {
+        isEditing = false; // Сброс блокировки
+        loadData();
+    }
+
+    function renderUsers(users) {
+        // Мы не перерисовываем, если количество юзеров не изменилось и мы не хотим сбить фокус
+        // Но для простоты перезаписываем, так как isEditing нас защищает
+        
+        const list = document.getElementById('usersList');
+        
+        // Сохраняем текущие значения инпутов, если вдруг фокус потеряется (на всякий случай)
+        const currentInputs = {};
+        document.querySelectorAll('.money-input').forEach(i => {
+            if(i.value) currentInputs[i.id] = i.value;
+        });
+
+        list.innerHTML = users.map(u => `
+            <tr>
+                <td>
+                    <span class="status-dot ${u.isOnline ? 'online' : ''}"></span>
+                    <span style="font-size:10px; color:#666">${u.isOnline ? 'ON' : 'OFF'}</span>
+                </td>
+                <td>
+                    <div style="font-weight:bold">${u.email}</div>
+                    <div style="font-size:9px; color:#555">${u.isElite ? '👑 ELITE MEMBER' : 'Standard'}</div>
+                </td>
+                <td style="color:#C2B280; font-weight:bold">$${u.balance}</td>
+                <td>
+                    <div style="display:flex; align-items:center;">
+                        <input type="number" class="money-input" id="amount-${u.email}" placeholder="Сумма" value="${currentInputs['amount-'+u.email] || ''}">
+                        <button class="action-btn btn-add" onclick="moneyAction('${u.email}', 1)">+</button>
+                        <button class="action-btn btn-rem" onclick="moneyAction('${u.email}', -1)">-</button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function renderLogs(logs) {
+        const list = document.getElementById('logList');
+        // Обновляем логи всегда, они не мешают вводу
+        list.innerHTML = logs.map(l => `
+            <div class="log-item">
+                <div style="flex:1">
+                    <span class="log-type type-${l.type}">${l.type}</span>
+                    <span style="color:#bbb">${l.desc} <span style="color:#555">(${l.email})</span></span>
+                </div>
+                <div style="color:#444; font-size:9px;">${l.time.split(',')[1]}</div>
+            </div>
+        `).join('');
+    }
+
+    function renderReports(reports) {
+        const list = document.getElementById('reportsList');
+        const pending = reports.filter(r => !r.answer);
+
+        if (pending.length === 0) {
+            list.innerHTML = '<div style="color:#555; text-align:center; padding:20px;">Нет новых вопросов</div>';
+            return;
+        }
+
+        // Аналогично, сохраняем введенный текст если он есть
+        const currentReplies = {};
+        document.querySelectorAll('.rep-input').forEach(i => {
+            if(i.value) currentReplies[i.id] = i.value;
+        });
+
+        list.innerHTML = pending.map(r => `
+            <div class="report-item">
+                <div class="rep-header">
+                    <span>ОТ: ${r.email}</span>
+                    <span>${r.date}</span>
+                </div>
+                <div class="rep-msg">"${r.question}"</div>
+                
+                <div style="margin-bottom:5px;">
+                    <button class="quick-btn" onclick="fillReply(${r.id}, 'Здравствуйте! Вы попали в тех. поддержку Save The Date. На связи админ, чем могу помочь?')">[RU] Приветствие</button>
+                    <button class="quick-btn" onclick="fillReply(${r.id}, 'Hello! Welcome to Save The Date support. How can I help you today?')">[EN] Greeting</button>
+                    <button class="quick-btn" onclick="fillReply(${r.id}, 'Ваш вопрос передан специалисту. Ожидайте.')">Ожидание</button>
+                </div>
+
+                <div style="display:flex; gap:5px;">
+                    <input type="text" class="rep-input" id="reply-${r.id}" placeholder="Ваш ответ..." value="${currentReplies['reply-'+r.id] || ''}">
+                    <button class="action-btn btn-add" onclick="sendReply(${r.id})">ОТПРАВИТЬ</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // --- ФУНКЦИИ УПРАВЛЕНИЯ ---
+
+    async function moneyAction(email, multiplier) {
+        const input = document.getElementById(`amount-${email}`);
+        const val = parseInt(input.value);
+        
+        if (!val || val <= 0) return alert('Введите сумму!');
+        
+        const finalAmount = val * multiplier;
+
+        await fetch(`${SERVER}/admin/money`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ email, amount: finalAmount })
+        });
+        
+        input.value = ''; 
+        forceRefresh(); // Принудительно обновляем сразу
+    }
+
+    function fillReply(id, text) {
+        isEditing = true; // Блокируем обновление, чтобы текст не исчез
+        updateStatus(false);
+        
+        const input = document.getElementById(`reply-${id}`);
+        if(input) {
+            input.value = text;
+            input.focus(); // Ставим фокус, чтобы "isEditing" остался true
+        }
+    }
+
+    async function sendReply(id) {
+        const text = document.getElementById(`reply-${id}`).value;
+        if(!text) return;
+
+        await fetch(`${SERVER}/admin/reply-report`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ id, answer: text })
+        });
+        
+        isEditing = false; // Разблокируем
+        forceRefresh();
+    }
+
+    async function clearLogs() {
+        const pass = prompt("Введите пароль администратора (Sergeytirayan2011):");
+        if(!pass) return;
+
+        const res = await fetch(`${SERVER}/admin/clear-logs`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ password: pass })
+        });
+        
+        const d = await res.json();
+        if(d.success) {
+            alert('История успешно очищена!');
+            forceRefresh();
+        } else {
+            alert('Неверный пароль!');
+        }
+    }
+
+    // Запуск автообновления (каждые 2 секунды)
+    setInterval(loadData, 2000);
+    loadData();
+</script>
+
+</body>
+</html>

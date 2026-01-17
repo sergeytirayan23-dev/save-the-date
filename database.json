@@ -1,0 +1,45 @@
+{
+  "users": {
+    "sergeytirayan23@gmail.com": {
+      "balance": 1000,
+      "name": "sergeytirayan23",
+      "lastSeen": 1768592296527
+    },
+    "sergeytirayan01@gmail.com": {
+      "balance": 1000,
+      "name": "sergeytirayan01"
+    }
+  },
+  "orders": [],
+  "logs": [],
+  "reports": [
+    {
+      "id": 1768592003620,
+      "email": "sergeytirayan23@gmail.com",
+      "question": "цена",
+      "answer": "Ваш вопрос передан специалисту. Ожидайте.",
+      "date": "16.01.2026, 23:33:23"
+    },
+    {
+      "id": 1768591160199,
+      "email": "sergeytirayan23@gmail.com",
+      "question": "hi",
+      "answer": "Hello! Welcome to Save The Date support. How can I help you today?",
+      "date": "16.01.2026, 23:19:20"
+    },
+    {
+      "id": 1768589366549,
+      "email": "sergeytirayan23@gmail.com",
+      "question": "hi",
+      "answer": "Hello! Welcome to Save The Date support. How can I help you today?",
+      "date": "16.01.2026, 22:49:26"
+    },
+    {
+      "id": 1768588223813,
+      "email": "sergeytirayan23@gmail.com",
+      "question": "hi",
+      "answer": "Hello! Welcome to Save The Date support. How can I help you today?",
+      "date": "16.01.2026, 22:30:23"
+    }
+  ]
+}
